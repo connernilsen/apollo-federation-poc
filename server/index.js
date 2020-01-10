@@ -13,14 +13,8 @@ const gateway = new ApolloGateway({
 // Provide ApolloGateway to ApolloServer
 const server = new ApolloServer({
   gateway,
-  // disable subscriptions since they can't be used with ApolloGateway
-  subscriptions: false,
 });
 
 server.listen(4000).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 });
-
-
-
-

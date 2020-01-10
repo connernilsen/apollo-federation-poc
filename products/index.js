@@ -1,21 +1,19 @@
 const { ApolloServer, gql } = require('apollo-server');
 
 const typeDefs = gql`
-  type Query {
-    me: User
+  extend type Query {
+    topProducts(first: Int = 5): [Product]
   }
-
-  type User {
-    id: ID!
-    username: String
+  
+  type Product @key(fields: "upc") {
+    upc: String!
+    name: String!
+    price: Int
   }
 `;
 
 const resolvers = {
   Query: {
-    me() {
-      return { id: "1", username: "@conner" }
-    }
   }
 };
 
