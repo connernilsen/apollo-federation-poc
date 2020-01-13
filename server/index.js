@@ -5,16 +5,21 @@ const { ApolloGateway } = require('@apollo/gateway');
 const gateway = new ApolloGateway({
   serviceList: [
     { name: 'accounts', url: 'http://localhost:4001' },
-    { name: 'products', url: 'http://localhost:4002' },
-    { name: 'reviews', url: 'http://localhost:4003' }
+    { name: 'inventory', url: 'http://localhost:4002' },
+    { name: 'products', url: 'http://localhost:4003' },
+    { name: 'reviews', url: 'http://localhost:4004' }
   ],
 });
 
-// Provide ApolloGateway to ApolloServer
-const server = new ApolloServer({
-  gateway,
-});
+(async () => {
+  // load sub-graph schemas and resolvers
+  const { schema, executor } = await gateway.load();
 
-server.listen(4000).then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
-});
+  // initialize server
+  const server = new ApolloServer({ schema, executor });
+
+  // start server
+  server.listen().then(({ url }) => {
+    console.log(`🚀 Server ready at ${url}`);
+  });
+})();

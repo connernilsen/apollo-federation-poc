@@ -1,33 +1,55 @@
 const { ApolloServer, gql } = require('apollo-server');
+const { buildFederatedSchema } = require('@apollo/federation');
 
+// define GraphQL schema
 const typeDefs = gql`
   extend type Query {
     me: User
   }
 
-  type User @key(fieldds: "id") {
+  type User @key(fields: "id") {
     id: ID!
-    username: String!
+    name: String
+    username: String
    }
 `;
 
+// define GraphQL resolvers
 const resolvers = {
   Query: {
     me() {
-      return { id: "1", username: "@conner" }
+      return users[0];
+    }
+  },
+  User: {
+    __resolveReference(reference) {
+      return users.find(user => user.id === reference.id);
     }
   }
 };
 
+// initialize server
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
+  schema: buildFederatedSchema([{ typeDefs, resolvers }])
 });
 
+// start server
 server.listen(4001).then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
+  console.log(`🚀 Server 1 ready at ${url}`);
 });
 
-
-
-
+// data store
+const users = [
+  {
+    id: "1",
+    name: "Conner Nilsen",
+    birthDate: "1998-11-03",
+    username: "@conner"
+  },
+  {
+    id: "2",
+    name: "Mineral Tree",
+    birthDate: "2010-07-07",
+    username: "@mt"
+  }
+];
