@@ -1,14 +1,29 @@
 const { ApolloServer } = require('apollo-server');
-const { ApolloGateway } = require('@apollo/gateway');
+const { ApolloGateway, RemoteGraphQLDataSource } = require('@apollo/gateway');
 
-// Initialize ApolloGateway and provide (description) names and URLs
+// allows server to seat request headers before contacting gateway
+class DirectoryAuthenticator extends RemoteGraphQLDataSource {
+  willSendRequest({ request, context }) {
+    const { headers } = context;
+    if (headers) {
+      Object.keys(headers).map(
+        key => request.http && request.http.headers.set(key, headers[key])
+      );
+    }
+  }
+}
+
+// initialize ApolloGateway and provide (description) names and URLs
 const gateway = new ApolloGateway({
   serviceList: [
-    { name: 'accounts', url: 'http://localhost:4001' },
-    { name: 'inventory', url: 'http://localhost:4002' },
-    { name: 'products', url: 'http://localhost:4003' },
-    { name: 'reviews', url: 'http://localhost:4004' }
+    { name: 'directory', url: 'http://localhost:7000/graphQL' }
   ],
+  buildService({ name, url }) {
+    return new DirectoryAuthenticator({ name, url });
+  },
+  introspectionHeaders: {
+    "X-MT-Session": ''
+  },
 });
 
 (async () => {
@@ -16,7 +31,13 @@ const gateway = new ApolloGateway({
   const { schema, executor } = await gateway.load();
 
   // initialize server
-  const server = new ApolloServer({ schema, executor });
+  const server = new ApolloServer({ schema, executor,
+    context: ({ req, res }) => {
+      return {
+        headers: req.headers
+      };
+    }
+  });
 
   // start server
   server.listen().then(({ url }) => {
