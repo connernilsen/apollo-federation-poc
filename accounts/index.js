@@ -5,6 +5,7 @@ const { buildFederatedSchema } = require('@apollo/federation');
 const typeDefs = gql`
   extend type Query {
     me: User
+    users: [User]
   }
 
   type User @key(fields: "id") {
@@ -19,6 +20,9 @@ const resolvers = {
   Query: {
     me() {
       return users[0];
+    },
+    users() {
+      return users;
     }
   },
   User: {
