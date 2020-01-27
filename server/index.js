@@ -5,6 +5,7 @@ const { ApolloGateway, RemoteGraphQLDataSource } = require('@apollo/gateway');
 class DirectoryAuthenticator extends RemoteGraphQLDataSource {
   willSendRequest({ request, context }) {
     const { headers } = context;
+    request.http && request.http.headers.set('X-MT-Headers', '');
     if (headers) {
       Object.keys(headers).map(
         key => request.http && request.http.headers.set(key, headers[key])
@@ -20,10 +21,7 @@ const gateway = new ApolloGateway({
   ],
   buildService({ name, url }) {
     return new DirectoryAuthenticator({ name, url });
-  },
-  introspectionHeaders: {
-    "X-MT-Session": ''
-  },
+  }
 });
 
 (async () => {
